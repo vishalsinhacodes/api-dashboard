@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 
 # Virtual environment
-.venv/
+venv/
 
 # Logs
 run_logs/
