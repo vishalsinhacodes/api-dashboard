@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Automation Dashboard</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f6f8fb;
+        margin: 0;
+        padding: 20px;
+      }
+      .wrap {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .card {
+        background: #fff;
+        padding: 16px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        border: 1px solid #e6e9ef;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 8px;
+        border-bottom: 1px solid #eef1f6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Automation Dashboard</h1>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 12px;
+        "
+      >
+        <div>
+          <strong>Last updated:</strong>
+          {% if last_updated %}
+          <span class="muted">{{ last_updated }}</span>
+          {% else %}
+          <span class="muted">No data yet</span>
+          {% endif %}
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center">
+          <!-- Run pipeline form -->
+          <form
+            method="post"
+            action="/run"
+            style="display: flex; gap: 8px; align-items: center"
+          >
+            <input
+              type="password"
+              name="token"
+              placeholder="Run token"
+              style="padding: 6px; border-radius: 6px; border: 1px solid #ddd"
+            />
+            <button
+              type="submit"
+              style="
+                padding: 6px 10px;
+                border-radius: 8px;
+                border: none;
+                background: #16a34a;
+                color: white;
+                cursor: pointer;
+              "
+            >
+              Run Now
+            </button>
+          </form>
+
+          <!-- Quick link to latest run log -->
+          <a
+            href="/run/status"
+            style="
+              padding: 6px 8px;
+              border-radius: 8px;
+              border: 1px solid #e6e9ef;
+              background: #fff;
+              text-decoration: none;
+              color: #0b5fff;
+            "
+            >View last log</a
+          >
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>KPI</h3>
+        <div>
+          Repos: {{ totals.repos }} &nbsp; Stars: {{ totals.stars }} &nbsp;
+          Crypto: {{ crypto.latest_price if crypto }}
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Top Repositories</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Repo</th>
+              <th>Stars</th>
+              <th>Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in top_repos %}
+            <tr>
+              <td>{{ r.name }}</td>
+              <td>{{ r.stargazers_count }}</td>
+              <td><a href="{{ r.html_url }}">Open</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Weather</h3>
+        {% if weather %}
+        <div>
+          {{ weather.city }}, {{ weather.country }} — {{ weather.temp }}°
+        </div>
+        <img
+          src="/chart/weather_trend_latest.png?ts={{ ts }}"
+          style="max-width: 100%"
+        />
+        {% else %}
+        <div>No weather data yet.</div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <h3>Crypto</h3>
+        <img
+          src="/chart/crypto_latest.png?ts={{ ts }}"
+          style="max-width: 100%"
+        />
+      </div>
+
+      <div class="card">
+        <h3>Downloads</h3>
+        <a href="/download/github_repos_latest.csv?ts={{ ts }}"
+          >github_repos_latest.csv</a
+        >
+        |
+        <a href="/download/weather_latest.csv?ts={{ ts }}"
+          >weather_latest.csv</a
+        >
+        |
+        <a href="/download/crypto_latest.csv?ts={{ ts }}">crypto_latest.csv</a>
+      </div>
+    </div>
+  </body>
+</html>
