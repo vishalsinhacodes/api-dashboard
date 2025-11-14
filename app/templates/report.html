@@ -1,167 +1,694 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Automation Dashboard</title>
     <style>
+      /* ---------- Basic layout ---------- */
       body {
-        font-family: Arial, Helvetica, sans-serif;
-        background: #f6f8fb;
-        margin: 0;
-        padding: 20px;
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial;
+        margin: 20px;
+        background: #f7fafc;
+        color: #0f172a;
       }
-      .wrap {
-        max-width: 900px;
+      .container {
+        max-width: 1100px;
         margin: 0 auto;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: -0.2px;
+      }
+      .subtitle {
+        color: #6b7280;
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      /* ---------- toolbar ---------- */
+      .top-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding: 10px;
+        border-radius: 10px;
+        background: #ffffff;
+        box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+      }
+      .toolbar-left {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .toolbar-right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .kpi {
+        font-size: 14px;
+        color: #374151;
+      }
+      .muted {
+        color: #6b7280;
+        font-size: 13px;
+      }
+
+      .btn {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .btn-primary {
+        background: #16a34a;
+        color: #fff;
+      }
+      .btn-ghost {
+        background: transparent;
+        border: 1px solid #e6e9ef;
+        color: #0b5fff;
+      }
+
+      /* spinner */
+      .btn[disabled] {
+        opacity: 0.6;
+        cursor: default;
+      }
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+        vertical-align: middle;
+        margin-left: 8px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ---------- cards grid ---------- */
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 16px;
+        align-items: start;
       }
       .card {
         background: #fff;
-        padding: 16px;
-        border-radius: 10px;
-        margin-bottom: 12px;
-        border: 1px solid #e6e9ef;
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 6px 18px rgba(16, 24, 40, 0.04);
       }
+      .card h2 {
+        margin: 0 0 8px 0;
+        font-size: 16px;
+      }
+      .small {
+        font-size: 13px;
+        color: #6b7280;
+      }
+
+      /* repo table */
       table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 13px;
       }
       th,
       td {
+        text-align: left;
+        padding: 8px 6px;
+        border-bottom: 1px solid #eef2f7;
+      }
+      th {
+        font-weight: 700;
+        color: #111827;
+        font-size: 13px;
+      }
+
+      /* chart */
+      .chart {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      /* banner notifications */
+      .banner {
+        position: fixed;
+        right: 20px;
+        top: 20px;
+        z-index: 9999;
+        min-width: 280px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        color: white;
+        display: none;
+        box-shadow: 0 8px 24px rgba(2, 6, 23, 0.08);
+      }
+      .banner.success {
+        background: #059669;
+      }
+      .banner.error {
+        background: #dc2626;
+      }
+
+      /* modal */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.45);
+        display: none;
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal {
+        background: #fff;
+        padding: 18px;
+        border-radius: 8px;
+        min-width: 320px;
+        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+      }
+      .modal input[type="password"] {
+        width: 100%;
         padding: 8px;
-        border-bottom: 1px solid #eef1f6;
+        margin-top: 8px;
+        border-radius: 6px;
+        border: 1px solid #e6e9ef;
+      }
+      .modal .actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+      .muted-small {
+        color: #6b7280;
+        font-size: 12px;
+      }
+      .kpi-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .kpi-box {
+        background: #f1f5f9;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .card-row {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      @media (min-width: 980px) {
+        .card-row {
+          flex-direction: row;
+        }
+        .card-row .card {
+          flex: 1;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <h1>Automation Dashboard</h1>
-      <div
-        style="
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          margin-bottom: 12px;
-        "
-      >
+    <div class="container">
+      <header>
         <div>
-          <strong>Last updated:</strong>
-          {% if last_updated %}
-          <span class="muted">{{ last_updated }}</span>
-          {% else %}
-          <span class="muted">No data yet</span>
-          {% endif %}
+          <h1>Automation Dashboard</h1>
+          <div class="subtitle">
+            Snapshot reports & charts (powered by
+            <strong>api-playground</strong>)
+          </div>
+        </div>
+      </header>
+
+      <!-- ---------- Top toolbar: Last Updated / Refresh / Run Now / View Log ---------- -->
+      <div class="top-toolbar" id="topToolbar">
+        <div class="toolbar-left">
+          <div class="kpi">
+            <strong>Last updated:</strong>
+            <span id="lastUpdated" class="muted"
+              >{% if last_updated %}{{ last_updated }}{% else %}No data yet{%
+              endif %}</span
+            >
+          </div>
+          <button
+            class="btn btn-ghost"
+            id="refreshBtn"
+            title="Refresh charts and timestamp"
+          >
+            Refresh
+          </button>
         </div>
 
-        <div style="display: flex; gap: 8px; align-items: center">
-          <!-- Run pipeline form -->
-          <form
-            method="post"
-            action="/run"
-            style="display: flex; gap: 8px; align-items: center"
+        <div class="toolbar-right">
+          <button
+            class="btn btn-primary"
+            id="runBtn"
+            title="Run the pipeline now"
           >
-            <input
-              type="password"
-              name="token"
-              placeholder="Run token"
-              style="padding: 6px; border-radius: 6px; border: 1px solid #ddd"
-            />
-            <button
-              type="submit"
-              style="
-                padding: 6px 10px;
-                border-radius: 8px;
-                border: none;
-                background: #16a34a;
-                color: white;
-                cursor: pointer;
-              "
-            >
-              Run Now
-            </button>
-          </form>
-
-          <!-- Quick link to latest run log -->
+            Run Now
+            <span id="runSpinner" style="display: none" class="spinner"></span>
+          </button>
           <a
+            class="btn btn-ghost"
             href="/run/status"
-            style="
-              padding: 6px 8px;
-              border-radius: 8px;
-              border: 1px solid #e6e9ef;
-              background: #fff;
-              text-decoration: none;
-              color: #0b5fff;
-            "
+            target="_blank"
+            id="viewLog"
             >View last log</a
           >
         </div>
       </div>
 
-      <div class="card">
-        <h3>KPI</h3>
-        <div>
-          Repos: {{ totals.repos }} &nbsp; Stars: {{ totals.stars }} &nbsp;
-          Crypto: {{ crypto.latest_price if crypto }}
+      <!-- Modal for token -->
+      <div id="modalBackdrop" class="modal-backdrop">
+        <div class="modal">
+          <div><strong>Enter run token</strong></div>
+          <input
+            id="modalToken"
+            type="password"
+            placeholder="Run token (hidden)"
+          />
+          <div class="actions">
+            <button id="modalCancel" class="btn btn-ghost">Cancel</button>
+            <button id="modalSubmit" class="btn btn-primary">Start</button>
+          </div>
+          <div class="muted-small" style="margin-top: 8px">
+            The token is not stored — used only to trigger the pipeline.
+          </div>
         </div>
       </div>
 
-      <div class="card">
-        <h3>Top Repositories</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Repo</th>
-              <th>Stars</th>
-              <th>Link</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for r in top_repos %}
-            <tr>
-              <td>{{ r.name }}</td>
-              <td>{{ r.stargazers_count }}</td>
-              <td><a href="{{ r.html_url }}">Open</a></td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+      <!-- Banner container -->
+      <div id="banner" class="banner"></div>
 
-      <div class="card">
-        <h3>Weather</h3>
-        {% if weather %}
-        <div>
-          {{ weather.city }}, {{ weather.country }} — {{ weather.temp }}°
+      <!-- ---------- Main grid (left: content, right: side widgets) ---------- -->
+      <div class="grid" style="margin-top: 12px">
+        <!-- LEFT: content -->
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <!-- Repos card -->
+          <div class="card">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <h2>Top Repositories</h2>
+              <div class="small">
+                Total repos: <strong>{{ totals.repos }}</strong> &nbsp; • &nbsp;
+                Stars: <strong>{{ totals.stars }}</strong>
+              </div>
+            </div>
+
+            {% if top_repos %}
+            <table>
+              <thead>
+                <tr>
+                  <th>Repo</th>
+                  <th>Stars</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in top_repos %}
+                <tr>
+                  <td>
+                    <a href="{{ r.html_url }}" target="_blank"
+                      >{{ r.full_name or r.name }}</a
+                    >
+                  </td>
+                  <td>{{ r.stargazers_count }}</td>
+                  <td>{{ r.description or "-" }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <p class="muted">
+              No repository data yet. Run the pipeline to fetch snapshots.
+            </p>
+            {% endif %}
+
+            <div style="margin-top: 8px" class="small">
+              <a
+                data-download="true"
+                data-href="/download/github_repos_latest.csv"
+                href="/download/github_repos_latest.csv?ts={{ ts }}"
+                >Download CSV</a
+              >
+            </div>
+          </div>
+          <div class="card-row">
+            <!-- Crypto Snapshot -->
+            <div class="card">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <h2>Crypto Snapshot</h2>
+                <div class="small">
+                  Latest price:
+                  <strong>
+                    {% if crypto.latest_price is not none %} {{
+                    '%.2f'|format(crypto.latest_price) }} {% else %} - {% endif
+                    %}
+                  </strong>
+                </div>
+              </div>
+
+              <div style="margin-top: 8px">
+                <img
+                  data-cache="true"
+                  src="/chart/crypto_latest.png?ts={{ ts }}"
+                  data-src="/chart/crypto_latest.png"
+                  alt="crypto chart"
+                  class="chart"
+                />
+              </div>
+
+              <div class="muted" style="margin-top: 6px">
+                Min: {% if crypto.min_price is not none %} {{
+                '%.2f'|format(crypto.min_price) }} {% else %} - {% endif %} •
+                Max: {% if crypto.max_price is not none %} {{
+                '%.2f'|format(crypto.max_price) }} {% else %} - {% endif %} •
+                Samples: {{ crypto.count or 0 }}
+              </div>
+
+              <div style="margin-top: 6px" class="small">
+                <a
+                  data-download="true"
+                  data-href="/download/crypto_latest.csv"
+                  href="/download/crypto_latest.csv?ts={{ ts }}"
+                >
+                  Download crypto CSV
+                </a>
+              </div>
+            </div>
+
+            <!-- Weather Snapshot -->
+            <div class="card">
+              <h2>Weather Snapshot</h2>
+
+              {% if weather %}
+              <div class="small">
+                Location:
+                <strong
+                  >{{ weather.city or 'Unknown' }}, {{ weather.country or ''
+                  }}</strong
+                >
+              </div>
+
+              <div style="margin-top: 10px; font-size: 24px; font-weight: 600">
+                {{ weather.temp or '-' }} °C
+              </div>
+
+              <div class="muted" style="margin-top: 4px">
+                Condition: {{ weather.weather or '-' }}
+              </div>
+
+              {% if weather.obs_time_iso %}
+              <div class="muted-small" style="margin-top: 4px">
+                Observed at: {{ weather.obs_time_iso }}
+              </div>
+              {% endif %}
+
+              <div style="margin-top: 8px" class="small">
+                <a
+                  data-download="true"
+                  data-href="/download/weather_latest.csv"
+                  href="/download/weather_latest.csv?ts={{ ts }}"
+                >
+                  Download weather CSV
+                </a>
+              </div>
+              {% else %}
+              <p class="muted">
+                No weather snapshot available. Run the pipeline to fetch the
+                latest weather.
+              </p>
+              {% endif %}
+            </div>
+          </div>
+          <!-- Weather trend chart -->
+          <div class="card">
+            <h2>Weather Trend (last 7 days)</h2>
+            <img
+              data-cache="true"
+              src="/chart/weather_trend_latest.png?ts={{ ts }}"
+              data-src="/chart/weather_trend_latest.png"
+              alt="weather trend chart"
+              class="chart"
+            />
+            <div class="muted small" style="margin-top: 6px">
+              Generated from weather history data produced by
+              <code>api-playground</code>.
+            </div>
+          </div>
+
+          <!-- Optional: history, notes -->
+          <div class="card">
+            <h2>Notes & Recent Activity</h2>
+            <p class="small muted">
+              Use the <strong>Run Now</strong> button to generate new snapshots.
+              Logs are stored in the api-playground run_logs folder.
+            </p>
+          </div>
         </div>
-        <img
-          src="/chart/weather_trend_latest.png?ts={{ ts }}"
-          style="max-width: 100%"
-        />
-        {% else %}
-        <div>No weather data yet.</div>
-        {% endif %}
+
+        <!-- RIGHT: side widgets -->
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <div class="card">
+            <h2>Status</h2>
+            <div class="kpi-row" style="margin-top: 8px">
+              <div class="kpi-box">
+                Repos: <strong>{{ totals.repos }}</strong>
+              </div>
+              <div class="kpi-box">
+                Stars: <strong>{{ totals.stars }}</strong>
+              </div>
+            </div>
+            <div style="margin-top: 8px" class="small muted">
+              Dashboard depends on <code>api-playground</code> snapshots in the
+              data/ and charts/ folders.
+            </div>
+            <div style="margin-top: 10px">
+              <a class="btn btn-ghost" href="/_debug_data" target="_blank"
+                >View debug JSON</a
+              >
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Quick Links</h2>
+            <ul
+              style="padding-left: 18px; margin: 8px 0 0 0"
+              class="small muted"
+            >
+              <li>
+                <a
+                  data-download="true"
+                  data-href="/download/github_repos_latest.csv"
+                  href="/download/github_repos_latest.csv?ts={{ ts }}"
+                  >github_repos_latest.csv</a
+                >
+              </li>
+              <li>
+                <a
+                  data-download="true"
+                  data-href="/download/weather_latest.csv"
+                  href="/download/weather_latest.csv?ts={{ ts }}"
+                  >weather_latest.csv</a
+                >
+              </li>
+              <li>
+                <a
+                  data-download="true"
+                  data-href="/download/crypto_latest.csv"
+                  href="/download/crypto_latest.csv?ts={{ ts }}"
+                  >crypto_latest.csv</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
 
-      <div class="card">
-        <h3>Crypto</h3>
-        <img
-          src="/chart/crypto_latest.png?ts={{ ts }}"
-          style="max-width: 100%"
-        />
-      </div>
-
-      <div class="card">
-        <h3>Downloads</h3>
-        <a href="/download/github_repos_latest.csv?ts={{ ts }}"
-          >github_repos_latest.csv</a
-        >
-        |
-        <a href="/download/weather_latest.csv?ts={{ ts }}"
-          >weather_latest.csv</a
-        >
-        |
-        <a href="/download/crypto_latest.csv?ts={{ ts }}">crypto_latest.csv</a>
-      </div>
+      <footer
+        style="
+          margin-top: 20px;
+          text-align: center;
+          color: #94a3b8;
+          font-size: 13px;
+        "
+      >
+        Built with ♥ · Powered by <strong>api-playground</strong>
+      </footer>
     </div>
+
+    <!-- ---------- Scripts ---------- -->
+    <script>
+      /*****************************************************************
+       * Banner helper
+       *****************************************************************/
+      function showBanner(type, message, timeout = 5000) {
+        const el = document.getElementById("banner");
+        el.className = "banner " + (type === "success" ? "success" : "error");
+        el.textContent = message;
+        el.style.display = "block";
+        if (timeout) {
+          setTimeout(() => {
+            el.style.display = "none";
+          }, timeout);
+        }
+      }
+
+      /*****************************************************************
+       * Status update + cache-bust charts & CSV links
+       *****************************************************************/
+      async function updateStatusAndCharts() {
+        try {
+          const res = await fetch("/_debug_data");
+          if (!res.ok) throw new Error("Failed to fetch status");
+          const json = await res.json();
+
+          // update last updated
+          const lastUpdatedEl = document.getElementById("lastUpdated");
+          if (json.last_updated) {
+            lastUpdatedEl.textContent = json.last_updated;
+          } else {
+            // fallback to presence check
+            const repoInfo = json["github_repos_latest.csv"];
+            lastUpdatedEl.textContent =
+              repoInfo && repoInfo.exists ? "Data present" : "No data yet";
+          }
+
+          // cache-bust charts and CSV links
+          const ts = Date.now();
+          document.querySelectorAll('img[data-cache="true"]').forEach((img) => {
+            const src =
+              img.getAttribute("data-src") ||
+              img.getAttribute("src").split("?")[0];
+            img.src = `${src}?ts=${ts}`;
+            img.setAttribute("data-src", src);
+          });
+          document.querySelectorAll('a[data-download="true"]').forEach((a) => {
+            const href =
+              a.getAttribute("data-href") ||
+              a.getAttribute("href").split("?")[0];
+            a.href = `${href}?ts=${ts}`;
+            a.setAttribute("data-href", href);
+          });
+        } catch (e) {
+          console.error("updateStatusAndCharts error", e);
+          showBanner("error", "Unable to fetch dashboard status");
+        }
+      }
+
+      /*****************************************************************
+       * Run pipeline (modal + spinner)
+       *****************************************************************/
+      let runInProgress = false;
+
+      function showModal() {
+        document.getElementById("modalBackdrop").style.display = "flex";
+        document.getElementById("modalToken").value = "";
+        document.getElementById("modalToken").focus();
+      }
+      function hideModal() {
+        document.getElementById("modalBackdrop").style.display = "none";
+      }
+
+      async function runPipelineWithToken(token) {
+        if (runInProgress) return;
+        runInProgress = true;
+        const runBtn = document.getElementById("runBtn");
+        const spinner = document.getElementById("runSpinner");
+        runBtn.setAttribute("disabled", "");
+        spinner.style.display = "inline-block";
+        try {
+          const form = new FormData();
+          form.append("token", token);
+
+          showBanner("success", "Starting pipeline…");
+
+          const res = await fetch("/run", { method: "POST", body: form });
+          const body = await res.json();
+
+          if (!res.ok) {
+            showBanner("error", body.detail || JSON.stringify(body));
+          } else {
+            showBanner(
+              "success",
+              `Pipeline started (pid:${body.pid}). Log: ${body.log}`,
+              8000
+            );
+            // refresh after short delay so charts update
+            setTimeout(() => {
+              updateStatusAndCharts();
+            }, 1500);
+          }
+        } catch (e) {
+          console.error(e);
+          showBanner("error", "Failed to start pipeline");
+        } finally {
+          runInProgress = false;
+          runBtn.removeAttribute("disabled");
+          spinner.style.display = "none";
+          hideModal();
+        }
+      }
+
+      /*****************************************************************
+       * Wire UI
+       *****************************************************************/
+      document.getElementById("refreshBtn").addEventListener("click", () => {
+        updateStatusAndCharts();
+        showBanner("success", "Refreshed", 1500);
+      });
+      document.getElementById("runBtn").addEventListener("click", showModal);
+      document
+        .getElementById("modalCancel")
+        .addEventListener("click", hideModal);
+      document.getElementById("modalSubmit").addEventListener("click", () => {
+        const token = document.getElementById("modalToken").value;
+        if (!token) {
+          showBanner("error", "Token required");
+          return;
+        }
+        runPipelineWithToken(token);
+      });
+
+      window.addEventListener("load", () => {
+        updateStatusAndCharts();
+      });
+    </script>
   </body>
 </html>

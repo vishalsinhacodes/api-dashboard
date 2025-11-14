@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 import os
 from app import config
+from app.utils import get_latest_mtime, format_mtime_epoch
 
 app = FastAPI(title="Automation Dashboard")
 
@@ -34,7 +35,7 @@ import pathlib, csv, os
 async def debug_data():
     """
     Return quick diagnostics about the data and chart files the dashboard tries to load.
-    This is read-only and safe to keep temporarily.
+    Adds `last_updated` (human-friendly) so the frontend toolbar can show exact timestamp.
     """
     API_PLAYGROUND = config.API_PLAYGROUND
     DATA = config.DATA_DIR
@@ -77,6 +78,18 @@ async def debug_data():
         "env_API_PLAYGROUND_PATH": os.getenv("API_PLAYGROUND_PATH"),
         "env_dash_token_exists": bool(os.getenv("DASHBOARD_RUN_TOKEN")),
     }
+
+    paths_to_check = [
+        DATA / "github_repos_latest.csv",
+        DATA / "weather_latest.csv",
+        DATA / "crypto_latest.csv",
+        CHARTS / "crypto_latest.png",
+        CHARTS / "weather_trend_latest.png",
+    ]
+    latest_mtime = get_latest_mtime(paths_to_check)
+    out["last_updated"] = format_mtime_epoch(latest_mtime)
+    # ---------------------------------------------------
+
     return out
 
 
@@ -144,16 +157,6 @@ async def home(request: Request):
                     "count": len(prices),
                     "latest_iso": latest_row.get("iso_time") if latest_row else None,
                 }
-                
-        def _get_latest_mtime(paths):
-            mtimes = []
-            for p in paths:
-                try:
-                    if p.exists():
-                        mtimes.append(p.stat().st_mtime)
-                except Exception:
-                    continue
-            return max(mtimes) if mtimes else None
         
         # paths to check (data + charts)
         paths_to_check = [
@@ -163,11 +166,8 @@ async def home(request: Request):
             CHARTS / "crypto_latest.png",
             CHARTS / "weather_trend_latest.png",
         ]
-        latest_mtime = _get_latest_mtime(paths_to_check)
-        if latest_mtime:
-            last_updated = datetime.fromtimestamp(latest_mtime).astimezone().strftime("%Y-%m-%d %H:%M:%S %Z")
-        else:
-            last_updated = None
+        latest_mtime = get_latest_mtime(paths_to_check)
+        last_updated = format_mtime_epoch(latest_mtime)
 
         # Build context expected by the template
         context = {
